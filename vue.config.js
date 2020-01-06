@@ -1,10 +1,12 @@
 module.exports = {
     devServer: {
-      proxy: {
-        '^/api': {
-          target: 'localhost:5000',
-          changeOrigin: true
+        proxy: {
+            '/api': {
+                target: 'http://localhost:5000',
+                timeout: 6000,
+                secure: false,
+                changeOrigin: true
+            }
         }
-      }
     }
-  }
+}

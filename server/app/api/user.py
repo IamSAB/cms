@@ -1,7 +1,37 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
+from flask_jwt import current_identity, jwt_required
 
-user = Blueprint('user', __name__, url_prefix='/user')
+from ..models import User, db
 
-@user.route('/')
-def hello_world():
-    return 'Endpoint user API'
+user = Blueprint('user', __name__, url_prefix='/api/user')
+
+@user.route('/me', methods=['POST'])
+@jwt_required()
+def me():
+    u = current_identity
+    return jsonify(
+        username=u.username,
+        forename=u.forename,
+        surname=u.surname,
+        email=u.email
+    )
+
+@user.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+
+    user = User(
+        username=data['username'],
+        forename=data['forename'],
+        surname=data['surname'],
+        email=data['email']
+    )
+
+    user.set_password(data['password'])
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        'msg': 'Success'
+    })

@@ -20,4 +20,6 @@ yarn-error.log*
 *.sln
 *.sw?
 
+# python
 *.lock
+__pycache__/
