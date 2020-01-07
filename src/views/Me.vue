@@ -1,25 +1,21 @@
 <template>
-<div>
-    <div v-if="loaded">
+    <Loader :status="status">
         Username: {{me.username}} <br>
         email: {{me.email}} <br>
         forename: {{me.forename}} <br>
         surname: {{me.surname}}
-    </div>
-    <div v-else>
-        Could not load your data.
-    </div>
-    </div>
+    </Loader>
 </template>
 
 <script>
+import LoadDataMixin from '../mixins/LoadDataMixin.js'
+
 export default {
 
     name: 'me',
 
     data () {
         return {
-            loaded: false,
             me: {
                 username: '',
                 email: '',
@@ -29,16 +25,20 @@ export default {
         }
     },
 
-    mounted () {
-        this.$api.post('/user/me')
+    methods: {
+
+        load () {
+            this.$api.post('/user/me')
                 .then((response) => {
-                    window.UIkit.notification('Loaded')
-                    this.loaded = true
+                    this.loaded('Sucess')
                     this.me = response.data
                 })
                 .catch((error) => {
-                    console.log(error)
+                    this.error(':\'S', error)
                 })
-    }
+        }
+    },
+
+    mixins: [LoadDataMixin]
 }
 </script>
