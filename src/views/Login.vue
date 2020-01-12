@@ -13,7 +13,7 @@
                     <input type="password" class="uk-input" v-model="password">
                 </div>
             </div>
-            <div>
+            <div class="uk-margin-top">
                 <input type="submit" value="Login" class="uk-input" @click.prevent="login">
             </div>
         </form>
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+
 export default {
 
     name: 'login',
@@ -34,14 +35,16 @@ export default {
 
     methods: {
         login () {
-            this.$api.post('/auth', this.$data)
-                .then((response) => {
-                    window.UIkit.notification('Success')
-                    window.localStorage.setItem('access_token', response.data.access_token)
-                })
-                .catch((error) => {
-                    console.log(error)
-                })
+            this.$store.dispatch('login', {
+                vm: this,
+                credentials: {
+                    username: this.username,
+                    password: this.password
+                }
+            })
+            .then(() => {
+                this.$router.push('me')
+            })
         }
     }
 }
