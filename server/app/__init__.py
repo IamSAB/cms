@@ -1,6 +1,9 @@
-from flask import Flask
-from flask_jwt import JWT
-from .models import db, User
+from flask import Flask, jsonify
+from werkzeug.exceptions import HTTPException
+
+from .api.auth import auth, set_jwt_header
+from .api.user import user
+from .models import User, db
 
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 
@@ -8,33 +11,27 @@ app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 app.config.from_object('config')  # load ./config.py
 app.config.from_pyfile('config.py')  # load ./instance/config.py
 
-# initizalize database
-from .models import db
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
 
-# flask-jwt implementation
-def identity(payload):
-    return User.query.filter(User.id == payload['identity']).scalar()
 
-def authenticate(username, password):
-    user = User.query.\
-        filter( (User.username == username) | (User.email == username)).\
-        first()
-
-    if user and user.validate_password(password):
-        return user
-
-jwt = JWT(app, authenticate, identity)
-
-# register blueprints
-from .api.user import user
-
+app.register_blueprint(auth)
 app.register_blueprint(user)
 
-# views
+@app.after_request
+def after_request_func(response):
+    return set_jwt_header(response)
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    return {
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    }, e.code
+
 @app.route('/')
-def hello_world():
-    return 'This is a simple API server!'
+def home ():
+    return 'Hello World'

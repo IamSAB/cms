@@ -1,14 +1,13 @@
 <template>
-    <Loader :status="status">
+    <div>
         Username: {{me.username}} <br>
         email: {{me.email}} <br>
         forename: {{me.forename}} <br>
         surname: {{me.surname}}
-    </Loader>
+    </div>
 </template>
 
 <script>
-import LoadDataMixin from '../mixins/LoadDataMixin.js'
 
 export default {
 
@@ -25,20 +24,11 @@ export default {
         }
     },
 
-    methods: {
-
-        load () {
-            this.$api.post('/user/me')
-                .then((response) => {
-                    this.loaded('Sucess')
-                    this.me = response.data
-                })
-                .catch((error) => {
-                    this.error(':\'S', error)
-                })
-        }
-    },
-
-    mixins: [LoadDataMixin]
+    mounted () {
+        this.$api.post('/user/me')
+            .then((response) => {
+                this.me = response.data
+            })
+    }
 }
 </script>

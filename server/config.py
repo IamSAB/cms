@@ -1,4 +1,5 @@
 SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite3'
 SQLALCHEMY_ECHO = True
-SECRET_KEY = 'hello-world'
-JWT_AUTH_URL_RULE = '/api/auth'
+SECRET_KEY = 'super-secret-key'
+JWT_EXPIRATION = 300
+JWT_NOT_BEFORE = 0

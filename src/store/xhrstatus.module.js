@@ -31,8 +31,9 @@ export const XHRStatusModule = {
             state.xhrstatus = XHRStatus.Success
         },
 
-        setError (state) {
+        setError (state, error) {
             state.xhrstatus = XHRStatus.Error
+            console.log(error.response.data.description)
         }
 
     }

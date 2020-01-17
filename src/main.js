@@ -15,19 +15,19 @@ let config = {
     timeout: 1000
 }
 
-if (store.state.auth.jwt) {
-    config.headers = {
-        'Authorization': 'JWT ' + store.state.auth.jwt
-    }
-}
-
 const api = axios.create(config)
 
 api.interceptors.request.use((config) => {
     store.commit('setPending')
+    const jwt = store.state.auth.jwt
+    if (jwt) {
+        config.headers = {
+            'Authorization': jwt
+        }
+    }
     return config
 }, (error) => {
-    store.commit('setError')
+    store.commit('setError', error)
     return Promise.reject(error)
 })
 
@@ -36,9 +36,14 @@ api.interceptors.response.use((response) => {
     setTimeout(() => {
         store.commit('setInactive')
     }, 3000)
+    const jwt = response.data.jwt
+    if (jwt) {
+        store.commit('authenticate', jwt)
+        localStorage.setItem('jwt', response.data.jwt)
+    }
     return response
 }, (error) => {
-    store.commit('setError')
+    store.commit('setError', error)
     setTimeout(() => {
         store.commit('setInactive')
     }, 3000)

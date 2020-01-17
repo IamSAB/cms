@@ -7,7 +7,8 @@ export const AuthModule = {
     },
 
     getters: {
-        jwt: state => state.jwt,
+        getJwt: (state) => state.jwt,
+        jwtData: (state) => state.jwt ? JSON.parse(atob(state.jwt.split('.')[1])) : null,
         isAuthenticated: state => state.jwt != null
     },
 
@@ -24,17 +25,15 @@ export const AuthModule = {
 
     actions: {
 
-        login ({ commit }, { vm, credentials }) {
+        authenticate ({ commit }, { vm, credentials }) {
             return new Promise((resolve, reject) => {
-                vm.$api.post('/auth', credentials)
+                vm.$api.post('/auth/jwt', credentials)
                 .then((response) => {
-                    localStorage.setItem('jwt', response.data.access_token)
-                    commit('authenticate', response.data.access_token)
-                    vm.$notify('Successfully logged in.')
-                    resolve()
+                    localStorage.setItem('jwt', response.data.jwt)
+                    commit('authenticate', response.data.jwt)
+                    resolve(response)
                 })
                 .catch((error) => {
-                    vm.$notify(error.response.data.description, 'danger')
                     reject(error)
                 })
             })
