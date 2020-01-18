@@ -27,7 +27,7 @@ export const AuthModule = {
 
         authenticate ({ commit }, { vm, credentials }) {
             return new Promise((resolve, reject) => {
-                vm.$api.post('/auth/jwt', credentials)
+                vm.$api.post('/security/authenticate', credentials)
                 .then((response) => {
                     localStorage.setItem('jwt', response.data.jwt)
                     commit('authenticate', response.data.jwt)

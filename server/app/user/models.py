@@ -1,3 +1,5 @@
+import hashlib
+
 from ..database import db
 
 
@@ -27,9 +29,3 @@ class User(db.Model):
 
     def validate_password(self, password):
         return self.hash_password(password) == self.password
-
-    def __repr__(self):
-        return auto_repr(self, ['id', 'username', 'email', 'forename', 'surname'])
-
-    def __str__(self):
-        return repr(self)

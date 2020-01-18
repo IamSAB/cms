@@ -1,4 +1,5 @@
 
+import json
 from functools import wraps
 
 from flask import Blueprint, _request_ctx_stack, current_app, jsonify, request
@@ -16,7 +17,7 @@ current_user = LocalProxy(lambda: getattr(
 def append_jwt(response):
     if (current_user):
         data = json.loads(response.get_data())
-        data['jwt'] = generate_jwt(current_user.username)
+        data['jwt'] = jwt.generate(current_user.username)
         response.set_data(json.dumps(data))
     return response
 

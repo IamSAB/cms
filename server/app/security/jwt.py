@@ -2,7 +2,8 @@ import json
 from datetime import datetime, timedelta
 
 import jwt
-
+from flask import current_app
+from werkzeug.exceptions import Unauthorized
 
 def generate(username):
     iat = datetime.utcnow()

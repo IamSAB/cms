@@ -10,7 +10,7 @@ user = Blueprint('user', __name__, url_prefix='/api/user')
 @user.route('/me', methods=['POST'])
 @authenticated
 def me():
-    return jsonify(current_user.to_dict())
+    return jsonify(current_user.to_dict(['username','email','forename','surname']))
 
 
 @user.route('/register', methods=['POST'])

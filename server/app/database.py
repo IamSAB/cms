@@ -1,6 +1,3 @@
-import hashlib
-import os
-
 from flask_sqlalchemy import Model, SQLAlchemy
 
 from .utils import auto_repr
@@ -8,11 +5,18 @@ from .utils import auto_repr
 
 class BaseModel(Model):
 
-    def to_dict(model):
-        return dict((column.name, getattr(model, column.name)) for column in model.__table__.columns)
+    def to_dict(self, properties=None):
+        if not properties:
+            return dict((column.name, getattr(self, column.name)) for column in self.__table__.columns)
+        else:
+            data = {}
+            for column in self.__table__.columns:
+                if column.name in properties:
+                    data[column.name] = getattr(self, column.name)
+            return data
 
     def __repr__(self):
-        return auto_repr(self, ['id'])
+        return auto_repr(self, [column.name for column in self.__table__.columns])
 
     def __str__(self):
         return repr(self)
