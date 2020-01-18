@@ -1,11 +1,5 @@
-import hashlib
-import os
+from ..database import db
 
-from flask_sqlalchemy import SQLAlchemy
-
-from .utils import auto_repr
-
-db = SQLAlchemy()
 
 class User(db.Model):
 

@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
 from werkzeug.exceptions import HTTPException
 
-from .api.auth import auth, set_jwt_header
-from .api.user import user
-from .models import User, db
+from .database import db
+from .security.api import security, append_jwt
+from .user.api import user
 
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 
@@ -16,22 +16,25 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-
-app.register_blueprint(auth)
+# register blueprint
+app.register_blueprint(security)
 app.register_blueprint(user)
+
 
 @app.after_request
 def after_request_func(response):
-    return set_jwt_header(response)
+    return append_jwt(response)
+
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
-    return {
-        "code": e.code,
-        "name": e.name,
-        "description": e.description,
-    }, e.code
+    return jsonify({
+        'code': e.code,
+        'name': e.name,
+        'description': e.description,
+    }), e.code
+
 
 @app.route('/')
-def home ():
-    return 'Hello World'
+def home():
+    return jsonify(msg='I am online ;P')
