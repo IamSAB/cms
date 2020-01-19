@@ -3,3 +3,9 @@ SQLALCHEMY_ECHO = True
 SECRET_KEY = 'super-secret-key'
 JWT_EXPIRATION = 300
 JWT_NOT_BEFORE = 0
+MAIL_DEFAULT_SENDER = 'sab@localhost'
+MAIL_SERVER = 'smtp.gmail.com'
+MAIL_PORT = 465
+MAIL_USE_SSL = True
+MAIL_USERNAME = 'mail.simb.ch@gmail.com'
+MAIL_PASSWORD = '=nomis96'

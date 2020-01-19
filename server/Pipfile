@@ -10,6 +10,8 @@ flask = "*"
 flask-sqlalchemy = "*"
 pyjwt = "*"
 wtforms = "*"
+flask-mail = "*"
+flask-restful = "*"
 
 [requires]
 python_version = "3.6"
