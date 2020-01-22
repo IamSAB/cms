@@ -19,10 +19,10 @@ const api = axios.create(config)
 
 api.interceptors.request.use((config) => {
     store.commit('setPending')
-    const jwt = store.state.auth.jwt
-    if (jwt) {
+    const accessToken = store.getters.accessToken
+    if (accessToken) {
         config.headers = {
-            'Authorization': jwt
+            Authorization: 'Bearer' + accessToken
         }
     }
     return config
@@ -36,11 +36,6 @@ api.interceptors.response.use((response) => {
     setTimeout(() => {
         store.commit('setInactive')
     }, 3000)
-    const jwt = response.data.jwt
-    if (jwt) {
-        store.commit('authenticate', jwt)
-        localStorage.setItem('jwt', response.data.jwt)
-    }
     return response
 }, (error) => {
     store.commit('setError', error)

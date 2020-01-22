@@ -7,54 +7,67 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.local import LocalProxy
 
 from ..user.models import User
-from . import jwt
+from flask_restful import Resource
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    jwt_refresh_token_required, create_refresh_token,
+    get_jwt_identity, fresh_jwt_required
+)
+from .forms import LoginForm
 
-security = Blueprint('security', __name__, url_prefix='/api/security')
+jwt = JWTManager()
 
-current_user = LocalProxy(lambda: getattr(
-    _request_ctx_stack.top, 'current_user', None))
+@jwt.user_claims_loader
+def add_claims_to_access_token(user):
+    return {'username': user.username}
 
-def append_jwt(response):
-    if (current_user):
-        data = json.loads(response.get_data())
-        data['jwt'] = jwt.generate(current_user.username)
-        response.set_data(json.dumps(data))
-    return response
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.username
 
-def authenticated(fn):
-    @wraps(fn)
-    def decorator(*args, **kwargs):
-        token = request.headers.get('Authorization', None)
-        if token is None:
-            return Unauthorized()
-        payload = jwt.validate(token)
-        user = User.query.\
-            filter(User.username == payload['username']).\
-            first()
-        if not user:
-            raise Unauthorized()
-        _request_ctx_stack.top.current_user = user
-        return fn(*args, **kwargs)
-    return decorator
+@jwt.user_loader_callback_loader
+def user_loader_callback(identity):
+    return User.query.filter(User.username == identity).first()
 
 
-@security.route('/authenticate', methods=['POST'])
-def authenticate():
-    json = request.get_json()
+class Login(Resource):
 
-    user = User.query.\
-        filter((User.username == json['username']) | (User.email == json['username'])).\
-        first()
+    def post(self):
+        form = LoginForm()
+        if form.validate_on_submit():
+            data = form.get_data()
+            user = User.query.\
+                filter((User.username == data['username']) | (User.email == data['username'])).\
+                first()
+            if user and user.validate_password(data['password']):
+                return {
+                    'access_token': create_access_token(identity=user, fresh=True),
+                    'refresh_token': create_refresh_token(identity=user)
+                }
+            else:
+                raise Unauthorized('Username or password incorrect.')
 
-    if user and user.validate_password(json['password']):
-        return jsonify({'jwt': jwt.generate(user.username)})
-    else:
-        return Unauthorized()
+        return form.get_errors(), 400
 
 
-@security.route('/authorize', methods=['POST'])
-@authenticated
-def authorize():
-    return jsonify({
-        permissions: current_user.permissions
-    })
+class Refresh(Resource):
+
+    @jwt_refresh_token_required
+    def post(self):
+        return {'access_token': create_access_token(identity=get_jwt_identity(), fresh=False)}
+
+
+class FreshLogin(Resource):
+
+    def post(self):
+        form = LoginForm()
+        if form.validate_on_submit():
+            data = form.get_data()
+            user = User.query.\
+                filter((User.username == data['username']) | (User.email == data['username'])).\
+                first()
+            if user and user.validate_password(data['password']):
+                return {'access_token': create_access_token(identity=user, fresh=True)}
+            else:
+                raise Unauthorized('Username or passsword incorrect.')
+        return form.get_errors(), 400

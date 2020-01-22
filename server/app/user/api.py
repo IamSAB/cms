@@ -1,14 +1,14 @@
 from flask import Blueprint, jsonify, request
 
 from ..database import db
-from ..security.api import current_user, authenticated
+from flask_jwt_extended import jwt_required
 from .models import User
 
 user = Blueprint('user', __name__, url_prefix='/api/user')
 
 
 @user.route('/me', methods=['POST'])
-@authenticated
+@jwt_required
 def me():
     return jsonify(current_user.to_dict(['username','email','forename','surname']))
 

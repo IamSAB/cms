@@ -8,10 +8,11 @@ verify_ssl = true
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
-pyjwt = "*"
 wtforms = "*"
 flask-mail = "*"
 flask-restful = "*"
+itsdangerous = "*"
+flask-wtf = "*"
 
 [requires]
 python_version = "3.6"
