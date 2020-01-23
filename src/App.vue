@@ -119,19 +119,19 @@ export default {
         const freshloginModal = window.UIkit.modal(this.$refs.freshlogin)
         this.$api.interceptors.response.use(null, (error) => new Promise((resolve, reject) => {
             if (error.response.status === 401 & this.isAuthenticated) {
-                this.modal.show()
+                freshloginModal.show()
                 this.$once('freshlogin', () => {
                     this.$store.dispatch('freshlogin', {
                         vm: this,
                         credentials: {
-                            username: this.jwtData.username,
+                            username: this.accessTokenData.identity,
                             password: this.password
                         }
                     })
                     .then(response => {
                         let config = error.config
                         config.baseURL = ''
-                        config.headers.Authorization = 'Bearer' + this.accessToken
+                        config.headers.Authorization = 'Bearer ' + this.accessToken
                         this.$http.request(config)
                         .then(response => {
                             freshloginModal.hide()

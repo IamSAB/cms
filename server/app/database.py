@@ -3,7 +3,7 @@ from flask_sqlalchemy import Model, SQLAlchemy
 from .utils import auto_repr
 
 
-class BaseModel(Model):
+class ExtendedModel(Model):
 
     def to_dict(self, properties=None):
         if not properties:
@@ -22,4 +22,4 @@ class BaseModel(Model):
         return repr(self)
 
 
-db = SQLAlchemy(model_class=BaseModel)
+db = SQLAlchemy(model_class=ExtendedModel)

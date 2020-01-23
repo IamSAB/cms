@@ -6,7 +6,7 @@
                 <ValidationProvider name="Username" rules="required|alphaNum" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Username</label>
                 <div class="uk-form-controls">
-                    <input type="text" class="uk-input" v-model="username" :class="classes">
+                    <input type="text" class="uk-input" v-model="user.username" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -15,7 +15,7 @@
                 <ValidationProvider name="Email" rules="required" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Email</label>
                 <div class="uk-form-controls">
-                    <input type="email" class="uk-input" v-model="email" :class="classes">
+                    <input type="email" class="uk-input" v-model="user.email" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -24,7 +24,7 @@
                 <ValidationProvider name="Passoword" rules="required" v-slot="{ errors, classes }" vid="password">
                 <label class="uk-form-label">Password</label>
                 <div class="uk-form-controls">
-                    <input type="password" class="uk-input" v-model="password" :class="classes">
+                    <input type="password" class="uk-input" v-model="user.password" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -33,7 +33,7 @@
                 <ValidationProvider name="Password confirmation" rules="required|confirmed:password" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Confirm password</label>
                 <div class="uk-form-controls">
-                    <input type="password" class="uk-input" v-model="confirm" :class="classes">
+                    <input type="password" class="uk-input" v-model="user.confirm" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -42,7 +42,7 @@
                 <ValidationProvider name="Forename" rules="required|alpha" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Forename</label>
                 <div class="uk-form-controls">
-                    <input type="text" class="uk-input" v-model="forename" :class="classes">
+                    <input type="text" class="uk-input" v-model="user.forename" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -51,7 +51,7 @@
                 <ValidationProvider name="Surname" rules="required|alpha" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Surname</label>
                 <div class="uk-form-controls">
-                    <input type="text" class="uk-input" v-model="surname" :class="classes">
+                    <input type="text" class="uk-input" v-model="user.surname" :class="classes">
                     <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
                 </div>
                 </ValidationProvider>
@@ -85,27 +85,40 @@ configure({
 
 export default {
 
-    name: 'register',
+    name: 'user-edit',
 
     data () {
         return {
-            username: '',
-            email: '',
-            forename: '',
-            surname: '',
-            password: '',
-            confirm: ''
+            user: {
+                username: '',
+                email: '',
+                forename: '',
+                surname: '',
+                password: '',
+                confirm: ''
+            }
         }
     },
 
+    computed: {
+        url () {
+            return `/user/${this.$route.params.id}`
+        }
+    },
+
+    mounted () {
+        this.$api.get(this.url)
+            .then(response => {
+                console.log(response.data)
+                this.user = response.data
+            })
+    },
+
     methods: {
-        register () {
-            this.$api.put('/user/register', this.$data)
+        save () {
+            this.$api.post(this.url, this.$data)
                 .then((response) => {
                     window.UIkit.notification(response.data.msg)
-                    this.$router.push('login')
-                })
-                .catch((error) => {
                 })
         }
     },

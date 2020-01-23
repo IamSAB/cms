@@ -25,7 +25,7 @@ export default {
     },
 
     mounted () {
-        this.$api.post('/user/me')
+        this.$api.get('/me')
             .then((response) => {
                 this.me = response.data
             })
