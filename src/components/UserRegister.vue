@@ -1,58 +1,58 @@
 <template>
-    <div class="uk-flex uk-flex-center">
-        <ValidationObserver v-slot="{ invalid }">
-        <form @submit.prevent="register" class="uk-form-stacked">
+    <div>
+        <ValidationObserver v-slot="{ invalid }" ref="observer">
+        <form @submit.prevent="register" class="uk-form-stacked" uk-margin>
             <div>
-                <ValidationProvider name="Username" rules="required|alphaNum" v-slot="{ errors, classes }">
+                <ValidationProvider vid="username" name="Username" rules="required|alphaNum" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Username</label>
                 <div class="uk-form-controls">
                     <input type="text" class="uk-input" v-model="user.username" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
             <div>
-                <ValidationProvider name="Email" rules="required" v-slot="{ errors, classes }">
+                <ValidationProvider vid="email" name="Email" rules="required" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Email</label>
                 <div class="uk-form-controls">
                     <input type="email" class="uk-input" v-model="user.email" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
             <div>
-                <ValidationProvider name="Passoword" rules="required" v-slot="{ errors, classes }" vid="password">
+                <ValidationProvider vid="password" name="Passoword" rules="required" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Password</label>
                 <div class="uk-form-controls">
                     <input type="password" class="uk-input" v-model="user.password" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
             <div>
-                <ValidationProvider name="Password confirmation" rules="required|confirmed:password" v-slot="{ errors, classes }">
+                <ValidationProvider vid="confirm" name="Password confirmation" rules="required|confirmed:password" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Confirm password</label>
                 <div class="uk-form-controls">
                     <input type="password" class="uk-input" v-model="user.confirm" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
             <div>
-                <ValidationProvider name="Forename" rules="required|alpha" v-slot="{ errors, classes }">
+                <ValidationProvider vid="forename" name="Forename" rules="required|alpha" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Forename</label>
                 <div class="uk-form-controls">
                     <input type="text" class="uk-input" v-model="user.forename" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
             <div>
-                <ValidationProvider name="Surname" rules="required|alpha" v-slot="{ errors, classes }">
+                <ValidationProvider vid="surname" name="Surname" rules="required|alpha" v-slot="{ errors, classes }">
                 <label class="uk-form-label">Surname</label>
                 <div class="uk-form-controls">
                     <input type="text" class="uk-input" v-model="user.surname" :class="classes">
-                    <div><span v-for="(msg, i) in errors" :key="i">{{ msg }}</span></div>
+                    <ValidationErrors :errors="errors"/>
                 </div>
                 </ValidationProvider>
             </div>
@@ -67,6 +67,7 @@
 <script>
 import { ValidationObserver, ValidationProvider, extend, configure, setInteractionMode } from 'vee-validate'
 import { required, email, alpha_num as alphaNum, confirmed, alpha } from 'vee-validate/dist/rules'
+import ValidationErrors from '@/components/ValidationErrors'
 
 setInteractionMode('eager')
 
@@ -85,7 +86,14 @@ configure({
 
 export default {
 
-    name: 'user-edit',
+    name: 'user-register',
+
+    props: {
+        admin: {
+            type: Boolean,
+            default: false
+        }
+    },
 
     data () {
         return {
@@ -100,32 +108,27 @@ export default {
         }
     },
 
-    computed: {
-        url () {
-            return `/user/${this.$route.params.id}`
-        }
-    },
-
-    mounted () {
-        this.$api.get(this.url)
-            .then(response => {
-                console.log(response.data)
-                this.user = response.data
-            })
-    },
-
     methods: {
-        save () {
-            this.$api.post(this.url, this.$data)
-                .then((response) => {
-                    window.UIkit.notification(response.data.msg)
+        register () {
+            this.$publicApi.put('/user', this.user)
+                .then(res => {
+                    if (this.admin === true) {
+                        this.UI.notify('Successful registration. You will receive a mail to activate your account.')
+                        this.$router.push('login')
+                    } else {
+                        this.UI.notification('User registered. An email was sent for account activation.')
+                    }
+                })
+                .catch(error => {
+                    this.$refs.observer.setErrors(error.response.data.errors)
                 })
         }
     },
 
     components: {
         ValidationProvider,
-        ValidationObserver
+        ValidationObserver,
+        ValidationErrors
     }
 }
 </script>

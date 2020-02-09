@@ -1,8 +1,12 @@
 const XHRStatus = {
-    Inactive: 'inactive',
-    Pending: 'pending',
-    Success: 'success',
-    Error: 'error'
+    Inactive: 0,
+    Pending: 1,
+    Success: 2,
+    RequestError: 3,
+    RepsonseError: 4,
+    ClientError: 5,
+    ServerError: 6,
+    UnkownError: 7
 }
 
 export const XHRStatusModule = {
@@ -31,9 +35,24 @@ export const XHRStatusModule = {
             state.xhrstatus = XHRStatus.Success
         },
 
-        setError (state, error) {
-            state.xhrstatus = XHRStatus.Error
-            console.log(error.response.data.description)
+        setUnknownError (state) {
+            state.xhrstatus = XHRStatus.UnkownError
+        },
+
+        setRequestError (state) {
+            state.xhrstatus = XHRStatus.RequestError
+        },
+
+        setResponseError (state) {
+            state.xhrstatus = XHRStatus.ResponseError
+        },
+
+        setClientError (state) {
+            state.xhrstatus = XHRStatus.ClientError
+        },
+
+        setServerError (state) {
+            state.xhrstatus = XHRStatus.ServerError
         }
 
     }

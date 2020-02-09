@@ -6,9 +6,11 @@ from werkzeug.exceptions import HTTPException
 
 from .async_api import TaskStatus, async_api, async_api_cleaning
 from .database import db
+from .form import ValidationException
 from .mail import mail, send_mail
-from .security.api import FreshLogin, Login, Refresh, jwt
-from .user.api import MeResource, UserResource, UsersResource
+from .security.api import (Activation, ForgotPassword, FreshLogin, Login,
+                           Refresh, jwt)
+from .user.api import ChangePassword, Email, UserResource, UsersResource
 
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 
@@ -31,23 +33,39 @@ def before_first_request():
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     return jsonify({
-        'code': e.code,
-        'name': e.name,
-        'description': e.description,
+        'msg': e.description,
     }), e.code
 
+
+class CmsApi(Api):
+
+    def handle_error(self, e):
+        data = {
+            'msg': e.description
+        }
+        if isinstance(e, ValidationException):
+            data['errors'] = e.errors
+        return jsonify(data), e.code
+
+@app.route('/')
+def index ():
+    return 'API'
+
 # setup API
-api = Api(app, prefix='/api')
+api = CmsApi(app, prefix='/api')
 
 # security resources
-api.add_resource(Login, '/security/login')
-api.add_resource(Refresh, '/security/refresh')
-api.add_resource(FreshLogin, '/security/freshlogin')
+api.add_resource(Login, '/login', endpoint='login')
+api.add_resource(Refresh, '/refresh', endpoint='refreshlogin')
+api.add_resource(FreshLogin, '/freshlogin', endpoint='freshlogin')
+api.add_resource(ForgotPassword, '/password', endpoint='forgot_password')
+api.add_resource(Activation, '/activate', endpoint='activate')
 
 # user resources
-api.add_resource(MeResource, '/me')
-api.add_resource(UserResource, '/user/<id>', '/user')
-api.add_resource(UsersResource, '/users')
+api.add_resource(ChangePassword, '/user/<int:id>/password', endpoint='user_password')
+api.add_resource(Email, '/user/<int:id>/email', '/email', endpoint='user_email')
+api.add_resource(UserResource, '/user/<int:id>', '/user', endpoint='user')
+api.add_resource(UsersResource, '/users', endpoint='users')
 
 # async resources
-api.add_resource(TaskStatus, '/task/<task_id>')
+api.add_resource(TaskStatus, '/task/<string:task_id>')
